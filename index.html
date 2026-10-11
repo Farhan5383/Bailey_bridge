@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bailey Bridge Launching Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
+        @media print {
+            body { background: white; color: black; }
+            .no-print { display: none !important; }
+            .print-shadow { box-shadow: none !important; border: 1px solid #cbd5e1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-500 text-slate-900 p-2 rounded-lg font-bold text-xl flex items-center justify-center">
+                    <i class="fa-solid fa-bridge"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white">BaileyBridge Pro</h1>
+                    <p class="text-xs text-slate-400">Military & Civil Engineering Launch Calculator</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden sm:inline">Export Report</span>
+                </button>
+                <button onclick="resetCalculator()" class="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">Reset</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Inputs & Configurations -->
+        <div class="lg:col-span-5 space-y-6 no-print">
+            
+            <!-- Bridge Configuration Card -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 custom-shadow">
+                <h2 class="text-base font-semibold text-white mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-amber-400"></i>
+                    <span>Bridge & Truss Configuration</span>
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Bridge Span (Number of Bays)</label>
+                        <div class="flex items-center space-x-3">
+                            <input type="range" id="spanBays" min="3" max="30" value="12" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="updateCalculations()">
+                            <span id="spanBaysVal" class="bg-slate-700 px-3 py-1 rounded-md text-amber-400 font-bold text-sm w-20 text-center">12 bays</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Standard bay length = 3.048m (10 ft). Total span: <span id="totalSpanDist" class="text-slate-200 font-semibold">36.58</span> m</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Truss Reinforcement Type</label>
+                        <select id="trussType" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500" onchange="updateCalculations()">
+                            <option value="SS">Single-Single (SS) - Light Duty</option>
+                            <option value="DS" selected>Double-Single (DS) - Medium Duty</option>
+                            <option value="TS">Triple-Single (TS) - Heavy Duty</option>
+                            <option value="DD">Double-Double (DD) - Extra Medium</option>
+                            <option value="TD">Triple-Double (TD) - Extra Heavy</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Launching Nose Length (Bays)</label>
+                        <div class="flex items-center space-x-3">
+                            <input type="range" id="noseBays" min="3" max="15" value="6" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="updateCalculations()">
+                            <span id="noseBaysVal" class="bg-slate-700 px-3 py-1 rounded-md text-amber-400 font-bold text-sm w-20 text-center">6 bays</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Recommended: 30% to 50% of bridge span. Nose Length: <span id="totalNoseDist" class="text-slate-200 font-semibold">18.29</span> m</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Bridge Load Class</label>
+                            <select id="loadClass" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" onchange="updateCalculations()">
+                                <option value="40">Class 40 (Standard)</option>
+                                <option value="60">Class 60 (Heavy)</option>
+                                <option value="70">Class 70 (Main Battle Tank)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Roller Friction Coeff.</label>
+                            <input type="number" id="frictionCoeff" value="0.05" step="0.01" min="0.01" max="0.15" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" oninput="updateCalculations()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Site & Launch Parameters -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 custom-shadow">
+                <h2 class="text-base font-semibold text-white mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-mountain-sun text-amber-400"></i>
+                    <span>Site & Launch Gear</span>
+                </h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Roller Type</label>
+                            <select id="rollerType" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" onchange="updateCalculations()">
+                                <option value="launching">Standard Launching Roller (15t)</option>
+                                <option value="heavy">Heavy Rocker Roller (25t)</option>
+                                <option value="flat">Flat Sliding Plates</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Tackle / Winch Type</label>
+                            <select id="winchType" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" onchange="updateCalculations()">
+                                <option value="tackle5">5-Ton Hand Winch</option>
+                                <option value="tackle10" selected>10-Ton Mechanical Winch</option>
+                                <option value="dozer">Bulldozer / Tractor Pull</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Safety Factor Required</label>
+                        <input type="number" id="safetyFactor" value="1.5" step="0.1" min="1.1" max="3.0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" oninput="updateCalculations()">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Visualizer, Results & Step-by-step -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Launch Animation & Visualizer -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 custom-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-video text-amber-400"></i>
+                        <span>Launch Simulation & Roller Tipping Analysis</span>
+                    </h2>
+                    <span id="simulationStatus" class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/30">Stable Setup</span>
+                </div>
+
+                <!-- Canvas Visualizer -->
+                <div class="bg-slate-900 rounded-lg overflow-hidden border border-slate-700 relative mb-4">
+                    <canvas id="launchCanvas" class="w-full h-56 block"></canvas>
+                    <div class="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur px-3 py-1 rounded text-xs text-slate-300 border border-slate-700 flex items-center space-x-4">
+                        <span><i class="fa-solid fa-square text-amber-500"></i> Launching Nose</span>
+                        <span><i class="fa-solid fa-square text-sky-500"></i> Main Bridge Span</span>
+                        <span><i class="fa-solid fa-square text-rose-500"></i> Counterweight</span>
+                    </div>
+                </div>
+
+                <!-- Animation Controls -->
+                <div class="flex items-center justify-between bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleAnimation()" id="playBtn" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg font-semibold text-sm transition flex items-center space-x-2">
+                            <i class="fa-solid fa-play" id="playIcon"></i>
+                            <span id="playText">Simulate Launch</span>
+                        </button>
+                        <button onclick="resetAnimation()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-3 w-1/2">
+                        <span class="text-xs text-slate-400">Progress:</span>
+                        <input type="range" id="simProgress" min="0" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="setAnimationProgress(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <!-- Counterweight Box -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Counterweight Needed</span>
+                            <i class="fa-solid fa-scale-balanced text-amber-400"></i>
+                        </div>
+                        <div class="flex items-baseline space-x-2">
+                            <span id="resCounterweight" class="text-3xl font-bold text-white">0.0</span>
+                            <span class="text-slate-400 text-sm font-medium">Tonnes (T)</span>
+                        </div>
+                    </div>
+                    <p id="resCounterweightNote" class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-700/60">Required to prevent tipping backward during initial cantilever stages.</p>
+                </div>
+
+                <!-- Launching Force Box -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Max Launch Force (Traction)</span>
+                            <i class="fa-solid fa-truck-ramp-box text-sky-400"></i>
+                        </div>
+                        <div class="flex items-baseline space-x-2">
+                            <span id="resPullForce" class="text-3xl font-bold text-white">0.0</span>
+                            <span class="text-slate-400 text-sm font-medium">Tonnes (T)</span>
+                        </div>
+                    </div>
+                    <p id="resWinchAdvice" class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-700/60">Tackle rating is sufficient for smooth operation.</p>
+                </div>
+
+                <!-- Maximum Bending Moment Box -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Max Bending Moment</span>
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                        </div>
+                        <div class="flex items-baseline space-x-2">
+                            <span id="resBendingMoment" class="text-3xl font-bold text-white">0.0</span>
+                            <span class="text-slate-400 text-sm font-medium">kN-m</span>
+                        </div>
+                    </div>
+                    <p id="resMomentStatus" class="text-xs text-emerald-400 mt-3 pt-3 border-t border-slate-700/60 flex items-center space-x-1">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Within safe permissible limits for truss type.</span>
+                    </p>
+                </div>
+
+                <!-- Roller & Support Reaction Box -->
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 custom-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Max Roller Reaction</span>
+                            <i class="fa-solid fa-circle-nodes text-purple-400"></i>
+                        </div>
+                        <div class="flex items-baseline space-x-2">
+                            <span id="resRollerReaction" class="text-3xl font-bold text-white">0.0</span>
+                            <span class="text-slate-400 text-sm font-medium">Tonnes</span>
+                        </div>
+                    </div>
+                    <p id="resRollerAdvice" class="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-700/60">Recommended: Use at least 2 launching roller assemblies.</p>
+                </div>
+
+            </div>
+
+            <!-- Step-by-Step Launching Procedure Guide -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 custom-shadow">
+                <h2 class="text-base font-semibold text-white mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-list-check text-amber-400"></i>
+                    <span>Step-by-Step Launching Sequence & Procedures</span>
+                </h2>
+                <div id="procedureSteps" class="space-y-4 text-sm text-slate-300">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-800 border-t border-slate-700 mt-auto py-4 text-center text-xs text-slate-400 no-print">
+        <p>BaileyBridge Pro Engineering Suite &bull; Designed in compliance with standard military bridging manuals & field engineering guides.</p>
+    </footer>
+
+    <script>
+        const BAY_LENGTH = 3.048; // meters (10 feet)
+        
+        const TRUSS_SPECS = {
+            'SS': { wtPerBay: 0.275, momentCap: 1250, shearCap: 450, name: 'Single-Single' },
+            'DS': { wtPerBay: 0.550, momentCap: 2800, shearCap: 950, name: 'Double-Single' },
+            'TS': { wtPerBay: 0.825, momentCap: 4100, shearCap: 1400, name: 'Triple-Single' },
+            'DD': { wtPerBay: 1.100, momentCap: 6000, shearCap: 1900, name: 'Double-Double' },
+            'TD': { wtPerBay: 1.650, momentCap: 9200, shearCap: 2800, name: 'Triple-Double' }
+        };
+
+        let isAnimating = false;
+        let animationProgress = 0;
+        let animationId = null;
+
+        function updateCalculations() {
+            const spanBays = parseInt(document.getElementById('spanBays').value);
+            const noseBays = parseInt(document.getElementById('noseBays').value);
+            const trussKey = document.getElementById('trussType').value;
+            const frictionCoeff = parseFloat(document.getElementById('frictionCoeff').value);
+            const safetyFactor = parseFloat(document.getElementById('safetyFactor').value);
+
+            document.getElementById('spanBaysVal').innerText = spanBays + ' bays';
+            document.getElementById('totalSpanDist').innerText = (spanBays * BAY_LENGTH).toFixed(2);
+            document.getElementById('noseBaysVal').innerText = noseBays + ' bays';
+            document.getElementById('totalNoseDist').innerText = (noseBays * BAY_LENGTH).toFixed(2);
+
+            const truss = TRUSS_SPECS[trussKey];
+            const totalBridgeLength = spanBays * BAY_LENGTH;
+            const totalNoseLength = noseBays * BAY_LENGTH;
+
+            const bridgeDeadWtPerBay = truss.wtPerBay * 2 + 0.4;
+            const noseDeadWtPerBay = truss.wtPerBay * 1.5;
+
+            const totalBridgeWt = spanBays * bridgeDeadWtPerBay;
+            const totalNoseWt = noseBays * noseDeadWtPerBay;
+
+            const rawCantileverMoment = (totalNoseWt * (totalNoseLength / 2) + totalBridgeWt * 0.3 * (totalBridgeLength / 2)) * 9.81;
+
+            const rearAnchorDistance = 6.0;
+            let requiredCW = 0;
+            const stabilizingMoment = (totalBridgeWt * 0.4 * 9.81 * 4.0);
+            if (rawCantileverMoment > stabilizingMoment) {
+                requiredCW = ((rawCantileverMoment - stabilizingMoment) / (9.81 * rearAnchorDistance)) * safetyFactor;
+                requiredCW = Math.max(0, requiredCW);
+            }
+
+            const totalMovingWt = totalBridgeWt + totalNoseWt;
+            const maxPullForce = totalMovingWt * frictionCoeff * safetyFactor;
+
+            const maxBendingMoment = rawCantileverMoment / 1000;
+            const momentUtilization = maxBendingMoment / truss.momentCap;
+            const maxRollerReaction = (totalMovingWt * 0.7) * safetyFactor;
+
+            document.getElementById('resCounterweight').innerText = requiredCW.toFixed(1);
+            if (requiredCW > 0) {
+                document.getElementById('resCounterweightNote').innerText = `Required rear counterweight: ~${requiredCW.toFixed(1)}T securely tied to the tail bays.`;
+            } else {
+                document.getElementById('resCounterweightNote').innerText = `No counterweight required. Bridge dead weight behind launching rollers is sufficient.`;
+            }
+
+            document.getElementById('resPullForce').innerText = maxPullForce.toFixed(2);
+            
+            const winchSelect = document.getElementById('winchType').value;
+            let winchCapacity = 10;
+            if (winchSelect === 'tackle5') winchCapacity = 5;
+            if (winchSelect === 'dozer') winchCapacity = 20;
+
+            if (maxPullForce > winchCapacity) {
+                document.getElementById('resWinchAdvice').innerHTML = `<span class="text-rose-400 font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> Warning: Required pull (${maxPullForce.toFixed(1)}T) exceeds standard winch limit. Use multi-part tackle or heavy tractor.</span>`;
+            } else {
+                document.getElementById('resWinchAdvice').innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-circle-check"></i> Selected pulling gear capacity is adequate for smooth launching.</span>`;
+            }
+
+            document.getElementById('resBendingMoment').innerText = maxBendingMoment.toFixed(0);
+            const momentStatusEl = document.getElementById('resMomentStatus');
+            if (momentUtilization > 0.85) {
+                momentStatusEl.className = 'text-xs text-rose-400 mt-3 pt-3 border-t border-slate-700/60 flex items-center space-x-1';
+                momentStatusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>High stress (${(momentUtilization*100).toFixed(0)}% capacity). Consider upgrading truss type or lengthening nose.</span>`;
+            } else {
+                momentStatusEl.className = 'text-xs text-emerald-400 mt-3 pt-3 border-t border-slate-700/60 flex items-center space-x-1';
+                momentStatusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Within safe permissible limits for ${truss.name} truss.</span>`;
+            }
+
+            document.getElementById('resRollerReaction').innerText = maxRollerReaction.toFixed(1);
+
+            const statusBadge = document.getElementById('simulationStatus');
+            if (momentUtilization > 0.95) {
+                statusBadge.className = 'bg-rose-500/20 text-rose-400 text-xs px-2.5 py-1 rounded-full font-medium border border-rose-500/30';
+                statusBadge.innerText = 'High Structural Stress';
+            } else {
+                statusBadge.className = 'bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-1 rounded-full font-medium border border-emerald-500/30';
+                statusBadge.innerText = 'Stable Setup';
+            }
+
+            updateProcedureGuide(spanBays, noseBays, truss.name, requiredCW);
+            drawScene();
+        }
+
+        function updateProcedureGuide(spanBays, noseBays, trussName, cw) {
+            const container = document.getElementById('procedureSteps');
+            container.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="bg-amber-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                    <div>
+                        <strong class="text-white">Site Preparation & Roller Placement:</strong> Level the launching site on the near bank. Install launching rollers and rocking rollers firmly on timber sleepers or concrete foundations aligned precisely with the bridge axis.
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-amber-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                    <div>
+                        <strong class="text-white">Assemble Launching Nose (${noseBays} Bays):</strong> Build the lightweight launching nose on the launching rollers using ${trussName} configuration without decking components to minimize cantilever weight.
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-amber-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                    <div>
+                        <strong class="text-white">Attach Counterweights (${cw > 0 ? cw.toFixed(1) + ' Tonnes' : 'None required'}):</strong> ${cw > 0 ? 'Securely load counterweights onto the tail bays of the main bridge assembly to prevent rear tipping during initial cantilever.' : 'Ensure rear anchorage is secure against sliding.'}
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-amber-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">4</div>
+                    <div>
+                        <strong class="text-white">Assemble Main Bridge Span (${spanBays} Bays):</strong> Continue assembling main bridge bays behind the nose, adding transoms, stringers, and sway braces progressively as launching proceeds.
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-amber-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">5</div>
+                    <div>
+                        <strong class="text-white">Launching Operation:</strong> Operate the mechanical winch and tackle system steadily. Monitor nose tip trajectory as it approaches the far bank roller/cribbing.
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="bg-amber-500 text-slate-900 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">6</div>
+                    <div>
+                        <strong class="text-white">Jacking Down & Demolition of Nose:</strong> Once the nose lands on the far bank landing rollers, jack down the bridge onto permanent pedestals/bearings, dismantle the launching nose, and lay down final decking.
+                    </div>
+                </div>
+            `;
+        }
+
+        function drawScene() {
+            const canvas = document.getElementById('launchCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = rect.height;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, width, height);
+
+            const groundY = height - 50;
+            const riverLeft = width * 0.35;
+            const riverRight = width * 0.75;
+
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, groundY, riverLeft, 50);
+            ctx.fillRect(riverRight, groundY, width - riverRight, 50);
+
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(riverLeft, groundY - 15, riverRight - riverLeft, 65);
+            ctx.fillStyle = '#0369a1';
+            ctx.fillRect(riverLeft, groundY, riverRight - riverLeft, 50);
+
+            const rollerX = riverLeft - 20;
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(rollerX, groundY - 8, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(riverRight, groundY - 8, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            const spanBays = parseInt(document.getElementById('spanBays').value);
+            const noseBays = parseInt(document.getElementById('noseBays').value);
+            const totalBays = spanBays + noseBays;
+
+            const maxTravel = (riverRight - rollerX) * 0.95;
+            const currentTravel = (animationProgress / 100) * maxTravel;
+
+            const bridgeStartX = rollerX - currentTravel;
+            const noseLenPx = noseBays * 14;
+
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(bridgeStartX, groundY - 35, noseLenPx, 24);
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(bridgeStartX, groundY - 35, noseLenPx, 24);
+
+            ctx.strokeStyle = '#92400e';
+            for (let x = bridgeStartX; x < bridgeStartX + noseLenPx; x += 14) {
+                ctx.beginPath();
+                ctx.moveTo(x, groundY - 35);
+                ctx.lineTo(x + 14, groundY - 11);
+                ctx.moveTo(x + 14, groundY - 35);
+                ctx.lineTo(x, groundY - 11);
+                ctx.stroke();
+            }
+
+            const mainBridgeX = bridgeStartX + noseLenPx;
+            const mainBridgeLenPx = spanBays * 14;
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(mainBridgeX, groundY - 40, mainBridgeLenPx, 28);
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(mainBridgeX, groundY - 40, mainBridgeLenPx, 28);
+
+            ctx.strokeStyle = '#0369a1';
+            for (let x = mainBridgeX; x < mainBridgeX + mainBridgeLenPx; x += 14) {
+                ctx.beginPath();
+                ctx.moveTo(x, groundY - 40);
+                ctx.lineTo(x + 14, groundY - 12);
+                ctx.moveTo(x + 14, groundY - 40);
+                ctx.lineTo(x, groundY - 12);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillRect(mainBridgeX + mainBridgeLenPx - 25, groundY - 50, 25, 12);
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px Inter';
+            ctx.fillText('CW', mainBridgeX + mainBridgeLenPx - 20, groundY - 39);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px Inter';
+            ctx.fillText('Launching Rollers', rollerX - 40, groundY + 20);
+            ctx.fillText('Landing Roller', riverRight - 35, groundY + 20);
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            const btnIcon = document.getElementById('playIcon');
+            const btnText = document.getElementById('playText');
+            
+            if (isAnimating) {
+                btnIcon.className = 'fa-solid fa-pause';
+                btnText.innerText = 'Pause Simulation';
+                runAnimation();
+            } else {
+                btnIcon.className = 'fa-solid fa-play';
+                btnText.innerText = 'Simulate Launch';
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        function runAnimation() {
+            if (!isAnimating) return;
+            animationProgress += 0.4;
+            if (animationProgress > 100) {
+                animationProgress = 100;
+                isAnimating = false;
+                document.getElementById('playIcon').className = 'fa-solid fa-play';
+                document.getElementById('playText').innerText = 'Restart Simulation';
+            }
+            document.getElementById('simProgress').value = animationProgress;
+            drawScene();
+            if (isAnimating) {
+                animationId = requestAnimationFrame(runAnimation);
+            }
+        }
+
+        function setAnimationProgress(val) {
+            animationProgress = parseFloat(val);
+            drawScene();
+        }
+
+        function resetAnimation() {
+            isAnimating = false;
+            animationProgress = 0;
+            document.getElementById('simProgress').value = 0;
+            document.getElementById('playIcon').className = 'fa-solid fa-play';
+            document.getElementById('playText').innerText = 'Simulate Launch';
+            cancelAnimationFrame(animationId);
+            drawScene();
+        }
+
+        function resetCalculator() {
+            document.getElementById('spanBays').value = 12;
+            document.getElementById('noseBays').value = 6;
+            document.getElementById('trussType').value = 'DS';
+            document.getElementById('loadClass').value = '40';
+            document.getElementById('frictionCoeff').value = 0.05;
+            document.getElementById('rollerType').value = 'launching';
+            document.getElementById('winchType').value = 'tackle10';
+            document.getElementById('safetyFactor').value = 1.5;
+            resetAnimation();
+            updateCalculations();
+        }
+
+        window.onload = function() {
+            updateCalculations();
+            window.addEventListener('resize', drawScene);
+        };
+    </script>
+</body>
+</html>
